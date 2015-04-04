@@ -7,10 +7,8 @@ public:
 	~Options();
 	void usage(void) const;
 	bool init(int, char**);
-
 	void setAnalyseATR(bool);
 	bool getAnalyseATR(void) const;
-
 	void setPnp(bool);
 	bool getPnp(void) const;
 private:

@@ -34,20 +34,17 @@ bool Options::init(int ac, char **av) {
 			case 'n':
 				this->_analyse_atr = false;
 				break;
-
 			case 'h':
 				default:
 				this->usage();
 				return (false);
 				break;
-
 			case 't':
 				std::cout << "test" << std::endl;
 				return (false);
 				break;
 		}
 	}
-
 	if (ac - optind != 0)
 	{
 		this->usage();
