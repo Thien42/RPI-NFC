@@ -1,4 +1,6 @@
-SRC		=	./src/main.cpp
+SRC		=	./src/main.cpp	\
+			./src/Term.cpp	\
+			./src/Options.cpp
 
 OBJ		=	$(SRC:.cpp=.o)
 
@@ -6,7 +8,7 @@ NAME	=	test-nfc
 
 CXX		=	g++
 
-CXXFLAGS=	$(shell pkg-config --cflags libctacs) -I./inc
+CXXFLAGS=	$(shell pkg-config --cflags libctacs) -I./inc -fpermissive
 
 LDFLAGS	=	$(shell pkg-config --libs libctacs)
 
