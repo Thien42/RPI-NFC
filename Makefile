@@ -10,9 +10,9 @@ NAME	=	test-nfc
 
 CXX		=	g++
 
-CXXFLAGS=	$(shell pkg-config --cflags libctacs) -I./inc -fpermissive
+CXXFLAGS=	$(shell pkg-config --cflags libpcsclite) -I./inc --std=c++11
 
-LDFLAGS	=	$(shell pkg-config --libs libctacs)
+LDFLAGS	=	$(shell pkg-config --libs libpcsclite)
 
 all: $(NAME)
 

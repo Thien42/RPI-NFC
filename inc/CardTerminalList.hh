@@ -9,13 +9,12 @@
 #else
 	#include <winscard.h>
 #endif
-#include <list>
+#include <vector>
 #include "Term.hh"
 #include "Options.hh"
 #include "CardTerminal.hh"
 
 #define TIMEOUT 100
-#define ATR_PARSER "ATR_analysis"
 #define test_rv(fct, rv, hContext, term) \
 do { \
 	if (rv != SCARD_S_SUCCESS) \
@@ -35,19 +34,16 @@ public:
 	void waitForReader(void);
 	void setupReaders(void);
 private:
+	SCARD_READERSTATE *buildReaderStates(void);
 	const Term &_term;
 	Options &_options;
 	SCARDCONTEXT hContext;
 	LPSTR mszReaders;
 	DWORD dwReaders;
 	DWORD dwReadersOld;
-	SCARD_READERSTATE rgReaderStates[1];
-	SCARD_READERSTATE *rgReaderStates_t;
+	SCARD_READERSTATE rgReaderStates;
 	LONG rv;
-	char **_readers;
-	char *ptr;
-	int nbReaders;
-	std::list<CardTerminal*> _list;
+	std::vector<CardTerminal*> _list;
 };
 
 #endif /* __CARD_TERMINAL_LIST_HH__ */
