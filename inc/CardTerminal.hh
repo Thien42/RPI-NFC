@@ -1,50 +1,21 @@
-#ifndef __CARD_TERMINAL_LIST_HH__
-#define __CARD_TERMINAL_LIST_HH__
+#ifndef __CARD_TERMINAL_HH__
+#define __CARD_TERMINAL_HH__
 
-#include <iostream>
-#include <stdlib.h>
+#include <string>
 #ifdef __APPLE__
 	#include <PCSC/wintypes.h>
 	#include <PCSC/winscard.h>
 #else
 	#include <winscard.h>
 #endif
-#include "Term.hh"
-#include "Options.hh"
 
-#define TIMEOUT 100
-#define ATR_PARSER "ATR_analysis"
-#define test_rv(fct, rv, hContext, term) \
-do { \
-	if (rv != SCARD_S_SUCCESS) \
-	{ \
-		std::cout << term.getRed() << fct << " : " << pcsc_stringify_error(rv) <<  term.getColorEnd() << std::endl; \
-		(void)SCardReleaseContext(hContext); \
-		exit(-1); \
-	} \
-} while(0)
-
-class CardTerminalList {
+class CardTerminal {
 public:
-	CardTerminalList(const Term &term, Options&);
-	~CardTerminalList();
-	void list(void);
-	void loop(void);
-	void waitForReader(void);
-	void setupReaders(void);
+	CardTerminal(std::string const&);
+	~CardTerminal();
 private:
-	const Term &_term;
-	Options &_options;
-	SCARDCONTEXT hContext;
-	LPSTR mszReaders;
-	DWORD dwReaders;
-	DWORD dwReadersOld;
-	SCARD_READERSTATE rgReaderStates[1];
-	SCARD_READERSTATE *rgReaderStates_t;
-	LONG rv;
-	char **_readers;
-	char *ptr;
-	int nbReaders;
+	const std::string _name;
+	SCARD_READERSTATE _state;
 };
 
-#endif /* __CARD_TERMINAL_LIST_HH__ */
+#endif /* __CARD_TERMINAL_HH__ */

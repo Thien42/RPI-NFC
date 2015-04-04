@@ -1,6 +1,7 @@
-SRC		=	./src/main.cpp		\
-			./src/Term.cpp		\
-			./src/Options.cpp	\
+SRC		=	./src/main.cpp				\
+			./src/Term.cpp				\
+			./src/Options.cpp			\
+			./src/CardTerminalList.cpp	\
 			./src/CardTerminal.cpp
 
 OBJ		=	$(SRC:.cpp=.o)

@@ -21,7 +21,7 @@
 
 #include "Term.hh"
 #include "Options.hh"
-#include "CardTerminal.hh"
+#include "CardTerminalList.hh"
 
 int main(int argc, char *argv[])
 {
