@@ -30,6 +30,8 @@ public:
 	~CardTerminalList();
 	void list(void);
 	void loop(void);
+	void waitForReader(void);
+	void setupReaders(void);
 private:
 	const Term &_term;
 	Options &_options;
