@@ -7,10 +7,8 @@ Term::Term() {
 
 	char *term = getenv("TERM");
 	if (term) {
-		for (int i = 0; i < sizeof(terms) / sizeof(terms[0]); i++)
-		{
-			if (!strcmp(terms[i], term))
-			{
+		for (unsigned int i = 0; i < sizeof(terms) / sizeof(terms[0]); i++) {
+			if (!strcmp(terms[i], term)) {
 				this->_blue = "\33[34m";
 				this->_red = "\33[31m";
 				this->_magenta = "\33[35m";

@@ -25,6 +25,10 @@ public:
 private:
 	const std::string _name;
 	SCARD_READERSTATE _state;
+	struct s_reader {
+		DWORD state;
+		const char *name;
+	};
 };
 
 #endif /* __CARD_TERMINAL_HH__ */

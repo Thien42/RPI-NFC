@@ -10,7 +10,7 @@ NAME	=	test-nfc
 
 CXX		=	g++
 
-CXXFLAGS=	$(shell pkg-config --cflags libpcsclite) -I./inc --std=c++11
+CXXFLAGS=	$(shell pkg-config --cflags libpcsclite) -I./inc --std=c++11 -W -Wall -Wextra
 
 LDFLAGS	=	$(shell pkg-config --libs libpcsclite)
 

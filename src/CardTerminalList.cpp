@@ -11,39 +11,48 @@ CardTerminalList::CardTerminalList(const Term &term, Options &opts) :
 	mszReaders(NULL),
 	dwReaders(0)
 {
-	rv = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &hContext);
-	test_rv("SCardEstablishContext", rv, hContext, term);
-	rgReaderStates.szReader = "\\\\?PnP?\\Notification";
-	rgReaderStates.dwCurrentState = SCARD_STATE_UNAWARE;
-	rv = SCardGetStatusChange(hContext, 0, &rgReaderStates, 1);
-	if (rgReaderStates.dwEventState && SCARD_STATE_UNKNOWN) {
+	this->rv = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &hContext);
+	this->test_rv("SCardEstablishContext");
+	this->rgReaderStates.szReader = "\\\\?PnP?\\Notification";
+	this->rgReaderStates.dwCurrentState = SCARD_STATE_UNAWARE;
+	this->rv = SCardGetStatusChange(hContext, 0, &rgReaderStates, 1);
+	if (this->rgReaderStates.dwEventState && SCARD_STATE_UNKNOWN) {
 		std::cout << "PnP reader name not supported. Using polling." << std::endl;
-		opts.setPnp(false);
+		this->_options.setPnp(false);
 	}
 }
 
 CardTerminalList::~CardTerminalList() {
 }
 
+void CardTerminalList::test_rv(std::string const &fct) {
+	do {
+		if (this->rv != SCARD_S_SUCCESS) {
+			std::cout << this->_term.getRed() << fct << " : " << pcsc_stringify_error(this->rv) <<  this->_term.getColorEnd() << std::endl;
+			(void) SCardReleaseContext(this->hContext);
+			exit(-1);
+		}
+	} while(0);
+}
+
 void CardTerminalList::list() {
-	char *ptr;
 	this->_list.clear();
 	std::cout << this->_term.getRed() << "Scanning present readers..." << this->_term.getColorEnd() << std::endl;
-	rv = SCardListReaders(hContext, NULL, NULL, &dwReaders);
-	if (rv != SCARD_E_NO_READERS_AVAILABLE) test_rv("SCardListReaders", rv, hContext, this->_term);
-	dwReadersOld = dwReaders;
-	if (mszReaders) {
-		free(mszReaders);
-		mszReaders = NULL;
+	this->rv = SCardListReaders(this->hContext, NULL, NULL, &this->dwReaders);
+	if (this->rv != SCARD_E_NO_READERS_AVAILABLE) this->test_rv("SCardListReaders");
+	this->dwReadersOld = this->dwReaders;
+	if (this->mszReaders) {
+		free(this->mszReaders);
+		this->mszReaders = NULL;
 	}
-	mszReaders = reinterpret_cast<LPSTR> (malloc(sizeof(char)*dwReaders));
-	if (mszReaders == NULL) {
+	this->mszReaders = reinterpret_cast<LPSTR> (malloc(sizeof(char) * this->dwReaders));
+	if (this->mszReaders == NULL) {
 		std::cout << "malloc: not enough memory" << std::endl;
 		exit(1);
 	}
-	*mszReaders = 0;
-	rv = SCardListReaders(hContext, NULL, mszReaders, &dwReaders);
-	ptr = mszReaders;
+	*(this->mszReaders) = 0;
+	this->rv = SCardListReaders(this->hContext, NULL, this->mszReaders, &this->dwReaders);
+	char *ptr = this->mszReaders;
 	while (*ptr) {
 		this->_list.push_back(new CardTerminal(ptr));
 		ptr += strlen(ptr) + 1;
@@ -54,18 +63,18 @@ void CardTerminalList::waitForReader(void) {
 	if (SCARD_E_NO_READERS_AVAILABLE == rv || this->_list.size() == 0) {
 		std::cout << this->_term.getRed() << "Waiting for the first reader..." << this->_term.getColorEnd() << std::endl;
 		if (this->_options.getPnp()) {
-			rv = SCardGetStatusChange(hContext, INFINITE, &rgReaderStates, 1);
-			test_rv("SCardGetStatusChange", rv, hContext, this->_term);
+			this->rv = SCardGetStatusChange(this->hContext, INFINITE, &rgReaderStates, 1);
+			this->test_rv("SCardGetStatusChange");
 		} else {
-			rv = SCARD_S_SUCCESS;
-			while ((SCARD_S_SUCCESS == rv) && (dwReaders == dwReadersOld)) {
-				rv = SCardListReaders(hContext, NULL, NULL, &dwReaders);
-				if (SCARD_E_NO_READERS_AVAILABLE == rv) rv = SCARD_S_SUCCESS;
+			this->rv = SCARD_S_SUCCESS;
+			while ((SCARD_S_SUCCESS == this->rv) && (this->dwReaders == this->dwReadersOld)) {
+				this->rv = SCardListReaders(this->hContext, NULL, NULL, &this->dwReaders);
+				if (SCARD_E_NO_READERS_AVAILABLE == this->rv) this->rv = SCARD_S_SUCCESS;
 				sleep(1);
 			}
 		}
 		this->list();
-	} else test_rv("SCardListReader", rv, hContext, this->_term);
+	} else this->test_rv("SCardListReader");
 }
 
 void CardTerminalList::setupReaders(void) {
@@ -99,19 +108,19 @@ void CardTerminalList::loop(void) {
 	if (this->_options.getPnp()) timeout = INFINITE;
 	else timeout = TIMEOUT;
 	SCARD_READERSTATE *tmp = this->buildReaderStates();
-	rv = SCardGetStatusChange(hContext, timeout, tmp, this->_list.size() + 1);
-	while ((rv == SCARD_S_SUCCESS) || (rv == SCARD_E_TIMEOUT)) {
+	this->rv = SCardGetStatusChange(this->hContext, timeout, tmp, this->_list.size() + 1);
+	while ((this->rv == SCARD_S_SUCCESS) || (this->rv == SCARD_E_TIMEOUT)) {
 		if ((this->_options.getPnp() && tmp[this->_list.size()].dwEventState & SCARD_STATE_CHANGED)
-			|| ((SCardListReaders(hContext, NULL, NULL, &dwReaders) == SCARD_S_SUCCESS) && (dwReaders != dwReadersOld)) )
+			|| ((SCardListReaders(this->hContext, NULL, NULL, &this->dwReaders) == SCARD_S_SUCCESS) && (this->dwReaders != this->dwReadersOld)) )
 			this->list();
-		for (int i = 0; i < this->_list.size(); i++) {
-			const SCARD_READERSTATE &current = this->_list[i]->getState();
+		for (unsigned int i = 0; i < this->_list.size(); i++) {
 			if (tmp[i].dwEventState & SCARD_STATE_CHANGED) {
+				tmp[i].dwCurrentState = tmp[i].dwEventState;
 				this->_list[i]->setCurrentState(tmp[i]);
 			} else continue;
 			this->_list[i]->displayState(this->_term, this->_options);
 		}
 		tmp = this->buildReaderStates();
-		rv = SCardGetStatusChange(hContext, timeout, tmp, this->_list.size() + 1);
+		this->rv = SCardGetStatusChange(this->hContext, timeout, tmp, this->_list.size() + 1);
 	}
 }

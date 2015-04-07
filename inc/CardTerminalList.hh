@@ -15,15 +15,6 @@
 #include "CardTerminal.hh"
 
 #define TIMEOUT 100
-#define test_rv(fct, rv, hContext, term) \
-do { \
-	if (rv != SCARD_S_SUCCESS) \
-	{ \
-		std::cout << term.getRed() << fct << " : " << pcsc_stringify_error(rv) <<  term.getColorEnd() << std::endl; \
-		(void)SCardReleaseContext(hContext); \
-		exit(-1); \
-	} \
-} while(0)
 
 class CardTerminalList {
 public:
@@ -34,6 +25,7 @@ public:
 	void waitForReader(void);
 	void setupReaders(void);
 private:
+	void test_rv(std::string const&);
 	SCARD_READERSTATE *buildReaderStates(void);
 	const Term &_term;
 	Options &_options;

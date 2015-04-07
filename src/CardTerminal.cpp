@@ -21,20 +21,19 @@ std::string const &CardTerminal::getName(void) const {
 
 void CardTerminal::setCurrentState(SCARD_READERSTATE &state) {
 	this->_state = state;
-	this->_state.dwCurrentState = this->_state.dwEventState;
 }
 
 void CardTerminal::displayATR(const Term &term, const Options &opts) {
-	char atr[MAX_ATR_SIZE*3+1];/* ATR in ASCII */
-	char atr_command[sizeof(atr)+sizeof(ATR_PARSER)+2+1];
+	char atr[MAX_ATR_SIZE * 3 + 1];
+	char atr_command[sizeof(atr) + sizeof(ATR_PARSER) + 2 + 1];
 
 	if (this->_state.cbAtr > 0) {
 		std::cout << "  ATR: ";
 		if (this->_state.cbAtr) {
-			int i;
-			for (i = 0; i < this->_state.cbAtr; i++)
-				sprintf(&atr[i*3], "%02X ", this->_state.rgbAtr[i]);
-			atr[i*3-1] = '\0';
+			unsigned int i = 0;
+			for (i = i; i < this->_state.cbAtr; i++)
+				sprintf(&atr[i * 3], "%02X ", this->_state.rgbAtr[i]);
+			atr[i * 3 - 1] = '\0';
 		} else atr[0] = '\0';
 		printf("%s%s%s\n\n", term.getMagenta(), atr, term.getColorEnd());
 		fflush(stdout);
@@ -46,27 +45,23 @@ void CardTerminal::displayATR(const Term &term, const Options &opts) {
 }
 
 void CardTerminal::displayState(const Term &term, const Options &opts) {
-	time_t t = time(NULL);
+	static const struct s_reader states[] = {
+		{SCARD_STATE_IGNORE, "Ignore this reader"},
+		{SCARD_STATE_UNKNOWN, "Reader unknown"},
+		{SCARD_STATE_UNAVAILABLE, "Status unavailable"},
+		{SCARD_STATE_EMPTY, "Card removed"},
+		{SCARD_STATE_PRESENT, "Card inserted"},
+		{SCARD_STATE_ATRMATCH, "ATR matches card"},
+		{SCARD_STATE_EXCLUSIVE, "Exclusive mode"},
+		{SCARD_STATE_INUSE, "Shared mode"},
+		{SCARD_STATE_MUTE, "Unresponsive card - more than one card on the reader ?"},
+		{0, NULL}
+	};
 	std::cout << term.getMagenta() << "Reader " << this->getName() << term.getColorEnd() << std::endl;
 	std::cout << "Card state : " << term.getRed();
-	if (this->_state.dwCurrentState & SCARD_STATE_IGNORE)
-		std::cout << "Ignore this reader, ";
-	if (this->_state.dwCurrentState & SCARD_STATE_UNKNOWN)
-		std::cout << "Reader unknown" << std::endl;
-	if (this->_state.dwCurrentState & SCARD_STATE_UNAVAILABLE)
-		std::cout << "Status unavailable, ";
-	if (this->_state.dwCurrentState & SCARD_STATE_EMPTY)
-		std::cout << "Card removed, ";
-	if (this->_state.dwCurrentState & SCARD_STATE_PRESENT)
-		std::cout << "Card inserted, ";
-	if (this->_state.dwCurrentState & SCARD_STATE_ATRMATCH)
-		std::cout << "ATR matches card, ";
-	if (this->_state.dwCurrentState & SCARD_STATE_EXCLUSIVE)
-		std::cout << "Exclusive Mode, ";
-	if (this->_state.dwCurrentState & SCARD_STATE_INUSE)
-		std::cout << "Shared Mode, ";
-	if (this->_state.dwCurrentState & SCARD_STATE_MUTE)
-		std::cout << "Unresponsive card - more than one card on reader?, ";
+	for (int i = 0; states[i].name != NULL; i++)
+		if (states[i].state & this->_state.dwCurrentState)
+			std::cout << states[i].name << std::endl;
 	std::cout << term.getColorEnd() << std::endl;
 	if (opts.getAnalyseATR()) this->displayATR(term, opts);
 }
